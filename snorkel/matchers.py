@@ -327,3 +327,39 @@ class MiscMatcher(RegexMatchEach):
         kwargs['attrib'] = 'ner_tags'
         kwargs['rgx'] = 'MISC'
         super(MiscMatcher, self).__init__(*children, **kwargs)
+
+class FirstQueryMatcher(Matcher):
+    """Matcher base class for Ngram objects"""
+    def _is_subspan(self, c, span):
+        """Tests if candidate c is subspan of span, where span is defined specific to candidate type"""
+        return c.char_start >= span[0] and c.char_end <= span[1]
+
+    def _get_span(self, c):
+        """Gets a tuple that identifies a span for the specific candidate class that c belongs to"""
+        p = c.get_span().find('|')
+        return (c.char_start, p - 1)
+
+    def f(self, c):
+        # Iterate over candidate splits **at the word boundaries**
+        p = c.get_span().find('|')
+        if p > 0 and p < len(c.get_span()) - 1:
+            return True
+        return False
+
+class SecondQueryMatcher(Matcher):
+    """Matcher base class for Ngram objects"""
+    def _is_subspan(self, c, span):
+        """Tests if candidate c is subspan of span, where span is defined specific to candidate type"""
+        return c.char_start >= span[0] and c.char_end <= span[1]
+
+    def _get_span(self, c):
+        """Gets a tuple that identifies a span for the specific candidate class that c belongs to"""
+        p = c.get_span().find('|')
+        return (p + 1, c.char_end)
+
+    def f(self, c):
+        # Iterate over candidate splits **at the word boundaries**
+        p = c.get_span().find('|')
+        if p > 0 and p < len(c.get_span()) - 1:
+            return True
+        return False

@@ -307,3 +307,20 @@ class PretaggedCandidateExtractorUDF(UDF):
 
             # Add Candidate to session
             yield self.candidate_class(**candidate_args)
+
+class WholeSentence(CandidateSpace):
+    """
+    Defines the space of candidates as all n-grams (n <= n_max) in a Sentence _x_,
+    indexing by **character offset**.
+    """
+    def __init__(self):
+        CandidateSpace.__init__(self)
+
+    def apply(self, context):
+        offsets = context.char_offsets
+        L = len(offsets)
+        w = context.words[L-1]
+        end = offsets[L-1] + len(w) - 1
+        start = 0
+        ts = TemporarySpan(char_start=start1, char_end=end, sentence=context)
+        yield ts

@@ -33,9 +33,13 @@ def mark_sentence(s, args):
          ->  Then ~~[[1 Barack 1]]~~ married ~~[[2 Michelle 2]]~~.
     """
     marks = sorted([y for m in args for y in mark(*m)], reverse=True)
+    #print(marks)
+
     x = list(s)
     for k, v in marks:
         x.insert(k, v)
+    #print(x)
+    #quit()
     return x
 
 
@@ -89,11 +93,22 @@ class RNNBase(TorchNoiseAwareModel):
         data = []
         for candidate in candidates:
             # Mark sentence
+            sens = candidate.docCandidate.sentences[0].text.split('|')
+            if len(sens) != 2:
+                continue
+            words1 = sens[0].split(' ')
+            words2 = sens[1].split(' ')
+            words = words1 + words2
             args = [
-                (candidate[0].get_word_start(), candidate[0].get_word_end(), 1),
-                (candidate[1].get_word_start(), candidate[1].get_word_end(), 2)
+                (0, len(words1) - 1, 1),
+                (len(words1), len(words2) + len(words1), 2)
             ]
-            s = mark_sentence(candidate_to_tokens(candidate), args)
+            s = mark_sentence(words, args) 
+            #args = [
+            #    (candidate[0].get_word_start(), candidate[0].get_word_end(), 1),
+            #    (candidate[1].get_word_start(), candidate[1].get_word_end(), 2)
+            #]
+            #s = mark_sentence(candidate_to_tokens(candidate), args)
             # Either extend word table or retrieve from it
             f = self.word_dict.get if extend else self.word_dict.lookup
             data.append(np.array(list(map(f, s))))
